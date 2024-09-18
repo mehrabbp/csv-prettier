@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const columnSize = 80
+
 func main() {
 	filePath := os.Args[1]
 
@@ -38,22 +40,108 @@ func main() {
 
 	for _, record := range records {
 		fmt.Println(printDefaultLine(preferredLength))
-		fmt.Println(printLine(record, preferredLength))
+
+		maximumLines := findMaximumLine(record)
+		if maximumLines == 1 {
+			fmt.Println(printLine(record, preferredLength))
+		} else {
+			printBasedOnMaximumLines(record, preferredLength, maximumLines)
+		}
 	}
 	fmt.Println(printDefaultLine(preferredLength))
 
 }
 
+func printBasedOnMaximumLines(record []string, preferredLength []int, maximumLines int) {
+	for i := 0; i < maximumLines; i++ {
+		//fmt.Println("maxim", maximumLines)
+		line := "|"
+		for z, r := range record {
+			arr := wrapTextToArray(r, columnSize)
+
+			//fmt.Println("arr", len(arr), arr, i)
+			if len(arr)-1 >= i {
+				line += arr[i]
+				if len(arr[i]) < preferredLength[z] {
+					if preferredLength[z] < columnSize {
+						spacesNumber := preferredLength[z] - len(arr[i])
+						line += strings.Repeat(" ", spacesNumber)
+					} else {
+						spacesNumber := columnSize - len(arr[i])
+						line += strings.Repeat(" ", spacesNumber)
+					}
+				}
+			} else {
+				if preferredLength[z] < columnSize {
+					line += strings.Repeat(" ", preferredLength[z])
+				} else {
+					line += strings.Repeat(" ", columnSize)
+				}
+			}
+
+			line += "|"
+		}
+
+		fmt.Println(line)
+	}
+}
+
+func findMaximumLine(record []string) int {
+	maximumLines := 1
+	for _, r := range record {
+		if len(r) > columnSize {
+			arr := wrapTextToArray(r, columnSize)
+			if len(arr) > maximumLines {
+				maximumLines = len(arr)
+			}
+		}
+	}
+
+	return maximumLines
+}
+
 func printLine(record []string, preferredLength []int) string {
+
 	line := "|"
 	for i, r := range record {
 		line += r
-		spacesNumber := preferredLength[i] - len(r)
-		line += strings.Repeat(" ", spacesNumber)
+
+		if preferredLength[i] < columnSize {
+			spacesNumber := preferredLength[i] - len(r)
+			line += strings.Repeat(" ", spacesNumber)
+		} else {
+			spacesNumber := columnSize - len(r)
+			line += strings.Repeat(" ", spacesNumber)
+		}
 		line += "|"
 	}
-
 	return line
+}
+
+func wrapTextToArray(sentence string, colSize int) []string {
+	words := strings.Fields(sentence) // Split the sentence into words
+	var result []string
+	var line string
+
+	for _, word := range words {
+		// If adding the next word exceeds the column size, add the current line to result and reset it
+		if len(line)+len(word)+1 > colSize {
+			result = append(result, strings.TrimSpace(line)) // Append the current line
+			line = word                                      // Start new line with the current word
+		} else {
+			if len(line) > 0 {
+				line += " " // Add space between words
+			}
+			line += word // Append the word to the current line
+		}
+	}
+
+	// Append the last line if any
+	if len(line) > 0 {
+		result = append(result, line)
+	}
+
+	return result
 }
 
 func printDefaultLine(length []int) string {
@@ -61,7 +149,11 @@ func printDefaultLine(length []int) string {
 	line += "+"
 	minesNumbers := 0
 	for _, l := range length {
-		minesNumbers += l
+		if l > columnSize {
+			minesNumbers += columnSize
+		} else {
+			minesNumbers += l
+		}
 	}
 	minesNumbers += len(length)
 	minesString := "-"
