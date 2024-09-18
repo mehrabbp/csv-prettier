@@ -58,6 +58,8 @@ func printBasedOnMaximumLines(record []string, preferredLength []int, maximumLin
 		line := "|"
 		for z, r := range record {
 			arr := wrapTextToArray(r, columnSize)
+			startLine := (maximumLines - len(arr)) / 2
+			arr = shiftArray(arr, startLine)
 
 			//fmt.Println("arr", len(arr), arr, i)
 			if len(arr)-1 >= i {
@@ -84,6 +86,23 @@ func printBasedOnMaximumLines(record []string, preferredLength []int, maximumLin
 
 		fmt.Println(line)
 	}
+}
+
+func shiftArray(arr []string, startLine int) []string {
+	// Create a new array with the same length as the original array plus the startLine offset
+	newArr := make([]string, len(arr)+startLine)
+
+	// Fill the new array with empty strings before the startLine
+	for i := 0; i < startLine; i++ {
+		newArr[i] = ""
+	}
+
+	// Copy elements from the original array to the new array starting from startLine
+	for i := 0; i < len(arr); i++ {
+		newArr[startLine+i] = arr[i]
+	}
+
+	return newArr
 }
 
 func findMaximumLine(record []string) int {
