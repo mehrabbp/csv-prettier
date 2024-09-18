@@ -33,7 +33,11 @@ func main() {
 	for i := 0; i < len(records); i++ {
 		for j := 0; j < len(records[i]); j++ {
 			if len(records[i][j]) > preferredLength[j] {
-				preferredLength[j] = len(records[i][j])
+				if len(records[i][j]) < columnSize {
+					preferredLength[j] = len(records[i][j])
+				} else {
+					preferredLength[j] = columnSize
+				}
 			}
 		}
 	}
@@ -65,20 +69,11 @@ func printBasedOnMaximumLines(record []string, preferredLength []int, maximumLin
 			if len(arr)-1 >= i {
 				line += arr[i]
 				if len(arr[i]) < preferredLength[z] {
-					if preferredLength[z] < columnSize {
-						spacesNumber := preferredLength[z] - len(arr[i])
-						line += strings.Repeat(" ", spacesNumber)
-					} else {
-						spacesNumber := columnSize - len(arr[i])
-						line += strings.Repeat(" ", spacesNumber)
-					}
+					spacesNumber := preferredLength[z] - len(arr[i])
+					line += strings.Repeat(" ", spacesNumber)
 				}
 			} else {
-				if preferredLength[z] < columnSize {
-					line += strings.Repeat(" ", preferredLength[z])
-				} else {
-					line += strings.Repeat(" ", columnSize)
-				}
+				line += strings.Repeat(" ", preferredLength[z])
 			}
 
 			line += "|"
@@ -124,14 +119,8 @@ func printLine(record []string, preferredLength []int) string {
 	line := "|"
 	for i, r := range record {
 		line += r
-
-		if preferredLength[i] < columnSize {
-			spacesNumber := preferredLength[i] - len(r)
-			line += strings.Repeat(" ", spacesNumber)
-		} else {
-			spacesNumber := columnSize - len(r)
-			line += strings.Repeat(" ", spacesNumber)
-		}
+		spacesNumber := preferredLength[i] - len(r)
+		line += strings.Repeat(" ", spacesNumber)
 		line += "|"
 	}
 	return line
@@ -168,11 +157,7 @@ func printDefaultLine(length []int) string {
 	line += "+"
 	minesNumbers := 0
 	for _, l := range length {
-		if l > columnSize {
-			minesNumbers += columnSize
-		} else {
-			minesNumbers += l
-		}
+		minesNumbers += l
 	}
 	minesNumbers += len(length)
 	minesString := "-"
